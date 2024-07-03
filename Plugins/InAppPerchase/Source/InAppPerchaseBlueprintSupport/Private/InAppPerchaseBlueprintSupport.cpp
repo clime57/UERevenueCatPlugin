@@ -4,6 +4,7 @@
 #include "GetOfferingsBlueprintProxy.h"
 #include "PurchaseBlueprintProxy.h"
 #include "GetCustomerInfoBlueprintProxy.h"
+#include "RestorePurchasesBlueprintProxy.h"
 #include "Modules/ModuleManager.h"
 
 IMPLEMENT_MODULE(FDefaultModuleImpl, InAppPerchaseBlueprintSupport)
@@ -30,4 +31,12 @@ UK2Node_GetCustomerInfo::UK2Node_GetCustomerInfo(const FObjectInitializer& Objec
 	ProxyFactoryFunctionName = GET_FUNCTION_NAME_CHECKED(UGetCustomerInfoAsyncTaskProxy, CreateProxyObjectForGetCustomerInfo);
 	ProxyFactoryClass = UGetCustomerInfoAsyncTaskProxy::StaticClass();
 	ProxyClass = UGetCustomerInfoAsyncTaskProxy::StaticClass();
+}
+
+UK2Node_RestorePurchases::UK2Node_RestorePurchases(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
+{
+	ProxyFactoryFunctionName = GET_FUNCTION_NAME_CHECKED(URestorePurchasesAsyncTaskProxy, CreateProxyObjectForRestorePurchases);
+	ProxyFactoryClass = URestorePurchasesAsyncTaskProxy::StaticClass();
+	ProxyClass = URestorePurchasesAsyncTaskProxy::StaticClass();
 }

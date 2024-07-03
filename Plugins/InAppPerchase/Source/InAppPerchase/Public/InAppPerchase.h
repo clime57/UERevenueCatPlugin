@@ -9,6 +9,7 @@ DECLARE_LOG_CATEGORY_EXTERN(LogInApplePerchase, Log, All);
 class FGetOfferingAsyncTask;
 class FPurchaseAsyncTask;
 class FGetCustomerInfoAsyncTask;
+class FRestorePurchasesAsyncTask;
 class IInAppPerchaseModule : public IModuleInterface
 {
 public:
@@ -28,6 +29,8 @@ public:
 	virtual TSharedPtr<FPurchaseAsyncTask, ESPMode::ThreadSafe> Purchase(const FString& PackageId,const FString& Entitlement) = 0;
 
 	virtual TSharedPtr<FGetCustomerInfoAsyncTask, ESPMode::ThreadSafe> GetCustomerInfo() = 0;
+
+	virtual TSharedPtr<FRestorePurchasesAsyncTask, ESPMode::ThreadSafe> RestorePurchases() = 0;
 private:
 };
 
@@ -45,6 +48,8 @@ public:
 	virtual TSharedPtr<FPurchaseAsyncTask, ESPMode::ThreadSafe> Purchase(const FString& PackageId,const FString& Entitlement) override;
 
 	virtual TSharedPtr<FGetCustomerInfoAsyncTask, ESPMode::ThreadSafe> GetCustomerInfo() override;
+
+	virtual TSharedPtr<FRestorePurchasesAsyncTask, ESPMode::ThreadSafe> RestorePurchases() override;
 private:
 };
 
@@ -95,11 +100,37 @@ public:
 		bIsDone = true;
 	}
 	void MarkDone() { bIsDone = true; }
-
+	FCustomerInfo& GetCustomerInfo()
+	{
+		return CustomerInfo;
+	}
+	bool IsCancelled() { return bCancelled; }
 public:
+	FCustomerInfo CustomerInfo;
+	bool bCancelled = false;
 };
 
 class INAPPPERCHASE_API FGetCustomerInfoAsyncTask : public FAppleAsyncTaskBase
+{
+public:
+	void SetErrorReason(const FString& InError)
+	{
+		Error = InError;
+		bHadError = true;
+		bIsDone = true;
+	}
+	void MarkDone() { bIsDone = true; }
+
+	FCustomerInfo& GetCustomerInfo()
+	{
+		return CustomerInfo;
+	}
+public:
+	FCustomerInfo CustomerInfo;
+};
+
+
+class INAPPPERCHASE_API FRestorePurchasesAsyncTask : public FAppleAsyncTaskBase
 {
 public:
 	void SetErrorReason(const FString& InError)

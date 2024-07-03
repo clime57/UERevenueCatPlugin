@@ -8,7 +8,7 @@
 #include "OfferingDatas.h"
 #include "PurchaseBlueprintProxy.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FPurchaseDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FPurchaseDelegate,const FCustomerInfo&, CustomerInfo,const bool, bCancelled);
 
 class FPurchaseAsyncTask;
 
@@ -37,6 +37,8 @@ public:
 
 	TSharedPtr<FPurchaseAsyncTask, ESPMode::ThreadSafe> AsyncTask;
 
+	UPROPERTY(BlueprintReadOnly, Category = "InAppPerchase")
+	FCustomerInfo CustomerInfo;
 private:
 	bool bShouldTick;
 };

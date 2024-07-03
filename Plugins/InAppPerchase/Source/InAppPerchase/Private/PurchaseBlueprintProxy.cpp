@@ -15,21 +15,22 @@ void UPurchaseAsyncTaskProxy::Tick(float DeltaTime)
 	if (!AsyncTask.IsValid())
 	{
 		bShouldTick = false;
-		OnFailure.Broadcast();
+		OnFailure.Broadcast(CustomerInfo,false);
 		return;
 	}
 
 	if (AsyncTask->IsDone())
 	{
 		bShouldTick = false;
-		// Fire the right delegate
+		CustomerInfo = AsyncTask->GetCustomerInfo();
+		bool bIsCanceled = AsyncTask->IsCancelled();
 		if (!AsyncTask->HadError())
 		{
-			OnSuccess.Broadcast();
+			OnSuccess.Broadcast(CustomerInfo,bIsCanceled);
 		}
 		else
 		{
-			OnFailure.Broadcast();
+			OnFailure.Broadcast(CustomerInfo, bIsCanceled);
 		}
 	}
 }

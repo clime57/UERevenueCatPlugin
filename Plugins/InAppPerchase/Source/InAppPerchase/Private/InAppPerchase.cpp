@@ -75,7 +75,19 @@ TSharedPtr<FPurchaseAsyncTask, ESPMode::ThreadSafe> FInAppPerchaseModule::Purcha
             }
 			[[RCPurchases sharedPurchases]purchasePackage:package withCompletion : ^ (RCStoreTransaction * transaction, RCCustomerInfo * customerInfo, NSError * purchaseError, BOOL cancelled) {
                 UE_LOG(LogInApplePerchase, Error, TEXT("entitlement =  (%s)"), *entitlement);
+
+				if (cancelled)
+				{
+					FString Error("cancelled");
+					NSLog(@"cancelled");
+					PurchaseTask->bCancelled = cancelled;
+					PurchaseTask->SetErrorReason(Error);
+					return;
+				}
+
 				if (customerInfo.entitlements[ConvertFString(entitlement)].isActive) {
+					FCustomerInfo CustomerInfo = FCustomerInfo::FromRCCustomerInfo(customerInfo);
+					PurchaseTask->CustomerInfo = CustomerInfo;
 					PurchaseTask->MarkDone();
 					return;
 				}
@@ -128,13 +140,34 @@ TSharedPtr<FGetCustomerInfoAsyncTask, ESPMode::ThreadSafe> FInAppPerchaseModule:
             GetCustomerInfoTask->MarkDone();
 		}
     }];
-
-#endif
 	printf("GetCustomerInfo");
+#endif
 	return GetCustomerInfoTask;
 }
 
-
+TSharedPtr<FRestorePurchasesAsyncTask, ESPMode::ThreadSafe> FInAppPerchaseModule::RestorePurchases()
+{
+	TSharedPtr<FRestorePurchasesAsyncTask, ESPMode::ThreadSafe> RestorePurchasesTask = MakeShared<FRestorePurchasesAsyncTask, ESPMode::ThreadSafe>();
+#if PLATFORM_VISIONOS || PLATFORM_IOS
+	[[RCPurchases sharedPurchases]restorePurchasesWithCompletion:^ (RCCustomerInfo * customerInfo, NSError * error) {
+		if (error)
+		{
+			FString Error([error localizedDescription]);
+			NSLog(@"GetOffering Error!code = %ld", (long)error.code);
+			UE_LOG(LogInApplePerchase, Error, TEXT("GetCustomerInfo failed with error (%s)"), *Error);
+			RestorePurchasesTask->SetErrorReason(Error);
+		}
+		else
+		{
+			FCustomerInfo CustomerInfo = FCustomerInfo::FromRCCustomerInfo(customerInfo);
+			RestorePurchasesTask->CustomerInfo = CustomerInfo;
+			RestorePurchasesTask->MarkDone();
+		}
+	}];
+	printf("RestorePurchases");
+#endif
+	return RestorePurchasesTask;
+}
 #undef LOCTEXT_NAMESPACE
 	
 IMPLEMENT_MODULE(FInAppPerchaseModule, InAppPerchase)
